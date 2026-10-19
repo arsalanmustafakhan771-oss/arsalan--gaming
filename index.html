@@ -1,1 +1,250 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<meta name="description" content="Play free mini games at ARSALAN GAMING.">
+<title>ARSALAN GAMING</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#080808;color:white;
+  font-family:Arial,sans-serif
+}
+header{
+  padding:22px 10px;text-align:center;
+  color:#efc56c;font-size:24px;font-weight:bold;
+  letter-spacing:2px;border-bottom:1px solid #66502b
+}
+.hero{text-align:center;padding:45px 15px}
+h1{font-size:38px}
+.gold{color:#efc56c}
+p{color:#bdbdbd;line-height:1.6}
+button{
+  padding:12px 18px;border:0;border-radius:9px;
+  background:linear-gradient(120deg,#ffe39a,#c28b2d);
+  color:#111;font-weight:bold;font-size:15px;
+  cursor:pointer;margin:5px
+}
+section{padding:20px;max-width:900px;margin:auto}
+h2{color:#efc56c}
+.games{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{
+  padding:20px;background:#151515;text-align:center;
+  border:1px solid #594522;border-radius:15px
+}
+.emoji{font-size:38px}
+#game{
+  display:none;margin-top:20px;padding:20px;
+  background:#151515;border:1px solid #efc56c;
+  border-radius:15px;text-align:center
+}
+#game button{margin:7px}
+footer{
+  padding:25px;text-align:center;color:#999;
+  border-top:1px solid #333;margin-top:30px
+}
+@media(max-width:600px){
+  .games{grid-template-columns:1fr}
+  h1{font-size:32px}
+}
+</style>
+</head>
+
+<body>
+<header>👑 ARSALAN GAMING</header>
+
+<div class="hero">
+  <p class="gold">WELCOME TO YOUR ARENA</p>
+  <h1>LEVEL UP YOUR <span class="gold">GAME.</span></h1>
+  <p>Play. Compete. Beat your own high score.</p>
+  <button onclick="document.getElementById('games').scrollIntoView({behavior:'smooth'})">
+    EXPLORE GAMES 🎮
+  </button>
+</div>
+
+<section id="games">
+<h2>⚡ GAME ZONE</h2>
+<div class="games">
+
+<div class="card">
+  <div class="emoji">🎯</div>
+  <h3>Tap Challenge</h3>
+  <p>10 seconds mein maximum taps karo.</p>
+  <button onclick="tapGame()">PLAY NOW</button>
+</div>
+
+<div class="card">
+  <div class="emoji">⚡</div>
+  <h3>Reaction Test</h3>
+  <p>Green signal par jaldi tap karo.</p>
+  <button onclick="reactionGame()">PLAY NOW</button>
+</div>
+
+<div class="card">
+  <div class="emoji">🧠</div>
+  <h3>Gaming Quiz</h3>
+  <p>Apni gaming knowledge test karo.</p>
+  <button onclick="quizGame()">PLAY NOW</button>
+</div>
+
+</div>
+
+<div id="game">
+  <h2 id="title">GAME</h2>
+  <div id="content"></div>
+  <button onclick="closeGame()">CLOSE</button>
+</div>
+</section>
+
+<section>
+<h2>🏆 YOUR RECORDS</h2>
+<div class="card">
+  <p>Games played: <b id="played">0</b></p>
+  <p>Best tap score: <b id="best">0</b></p>
+  <p>Best reaction: <b id="bestReaction">—</b></p>
+</div>
+</section>
+
+<footer>© <span id="year"></span> ARSALAN GAMING<br>Made for gamers 🖤</footer>
+
+<script>
+const box=document.getElementById("game");
+const content=document.getElementById("content");
+let timers=[];
+let played=Number(localStorage.getItem("agPlayed")||0);
+let best=Number(localStorage.getItem("agBest")||0);
+let bestReaction=Number(localStorage.getItem("agReaction")||0);
+
+function stats(){
+  document.getElementById("played").textContent=played;
+  document.getElementById("best").textContent=best;
+  document.getElementById("bestReaction").textContent=
+    bestReaction?bestReaction+" ms":"—";
+  localStorage.setItem("agPlayed",played);
+  localStorage.setItem("agBest",best);
+  localStorage.setItem("agReaction",bestReaction);
+}
+function show(name){
+  timers.forEach(clearTimeout);timers=[];
+  document.getElementById("title").textContent=name;
+  content.innerHTML="";
+  box.style.display="block";
+  box.scrollIntoView({behavior:"smooth"});
+}
+function later(fn,ms){timers.push(setTimeout(fn,ms))}
+function closeGame(){
+  timers.forEach(clearTimeout);timers=[];
+  box.style.display="none";
+}
+
+function tapGame(){
+  show("🎯 TAP CHALLENGE");
+  let score=0,time=10,started=false;
+  content.innerHTML=`
+    <h3>Score: <span id="score">0</span></h3>
+    <p id="timer">Time: 10 seconds</p>
+    <button id="target" disabled>TAP!</button><br>
+    <button id="start">START</button>`;
+  const target=document.getElementById("target");
+  const start=document.getElementById("start");
+  target.onclick=()=>{
+    if(started&&time>0){
+      score++;
+      document.getElementById("score").textContent=score;
+    }
+  };
+  start.onclick=()=>{
+    if(started)return;
+    started=true;target.disabled=false;start.disabled=true;
+    function tick(){
+      time--;
+      document.getElementById("timer").textContent="Time: "+time+" seconds";
+      if(time<=0){
+        target.disabled=true;played++;
+        if(score>best)best=score;
+        stats();
+        document.getElementById("timer").textContent="Finished! Score: "+score;
+        start.textContent="PLAY AGAIN";start.disabled=false;
+        start.onclick=tapGame;
+      }else later(tick,1000);
+    }
+    later(tick,1000);
+  };
+}
+
+function reactionGame(){
+  show("⚡ REACTION TEST");
+  content.innerHTML=`
+    <p id="message">Start dabao aur green signal ka wait karo.</p>
+    <button id="react">START</button>`;
+  const b=document.getElementById("react");
+  let ready=false,finished=false,startTime=0;
+  b.onclick=()=>{
+    if(ready){
+      const ms=Math.round(performance.now()-startTime);
+      ready=false;finished=true;played++;
+      if(!bestReaction||ms<bestReaction)bestReaction=ms;
+      stats();
+      document.getElementById("message").textContent="Reaction: "+ms+" ms";
+      b.textContent="PLAY AGAIN";b.style.background="";
+      b.onclick=reactionGame;return;
+    }
+    if(!finished&&b.textContent==="WAIT..."){
+      timers.forEach(clearTimeout);timers=[];
+      finished=true;played++;stats();
+      document.getElementById("message").textContent="Too early! Try again.";
+      b.textContent="TRY AGAIN";b.style.background="";
+      b.onclick=reactionGame;return;
+    }
+    finished=false;b.disabled=true;b.textContent="WAIT...";
+    b.style.background="#b33";
+    later(()=>{
+      if(box.style.display==="none")return;
+      ready=true;startTime=performance.now();
+      b.disabled=false;b.textContent="TAP NOW!";
+      b.style.background="#15945b";
+    },1200+Math.random()*2500);
+  };
+}
+
+const questions=[
+  {q:"FPS ka full form kya hai?",a:["Frames Per Second","Fast Player Score"],c:0},
+  {q:"PC gaming mein kya use hota hai?",a:["Controller","Printer"],c:0},
+  {q:"Safe password kaisa hona chahiye?",a:["Hard to guess","123456"],c:0},
+  {q:"Multiplayer ka matlab?",a:["Multiple players","Only one player"],c:0}
+];
+
+function quizGame(){
+  show("🧠 GAMING QUIZ");
+  let n=0,score=0;
+  function ask(){
+    if(n>=questions.length){
+      played++;stats();
+      content.innerHTML="<h3>🏆 Score: "+score+"/"+questions.length+
+      "</h3><button id='again'>PLAY AGAIN</button>";
+      document.getElementById("again").onclick=quizGame;
+      return;
+    }
+    const q=questions[n];
+    content.innerHTML="<h3>"+q.q+"</h3>";
+    q.a.forEach((answer,i)=>{
+      const b=document.createElement("button");
+      b.textContent=answer;
+      b.onclick=()=>{
+        if(i===q.c)score++;
+        n++;ask();
+      };
+      content.appendChild(b);
+    });
+  }
+  ask();
+}
+document.getElementById("year").textContent=new Date().getFullYear();
+stats();
+</script>
+</body>
+</html>
